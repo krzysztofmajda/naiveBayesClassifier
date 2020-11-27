@@ -1,4 +1,5 @@
 import numpy as np
+import math as mt
 from io import StringIO
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.model_selection import train_test_split
@@ -40,7 +41,6 @@ class naiveBayesClassifier(BaseEstimator,ClassifierMixin):
         self.apriori=[]
         self.probabilities=[]
 
-
     def fit(self, X, y):
         counts = np.unique(y, return_counts=True)
         countsX  = np.unique(X, return_counts=True)[0]
@@ -48,10 +48,8 @@ class naiveBayesClassifier(BaseEstimator,ClassifierMixin):
         arr=counts[0]
         arr=arr.astype(np.int32)
         frequency=counts[1]
-
         for i in range(len(frequency)):
             self.apriori.append(frequency[i]/len(y))
-
         for m in arr:
             for l in range(X.shape[1]):
                 for k in countsX:
@@ -100,24 +98,57 @@ class naiveBayesClassifier(BaseEstimator,ClassifierMixin):
             result.append(helpList)
         return result
 
+class naiveBayesClassifierContinuous(BaseEstimator,ClassifierMixin):
+
+    def __init__(self):
+        self.averages=[]
+        self.standardDeviation=[]
+
+    def fit(self, X,y):
+        counts = np.unique(y, return_counts=True)
+        arr = counts[0]
+        arr = arr.astype(np.int32)
+        frequency = counts[1]
+        for i in arr:
+            for j in range(X.shape[1]):
+                counter = 0
+                avg = 0
+                for k in range(len(X)):
+                    if y[k] == i:
+                        counter=counter+X[k][j]
+                avg=counter/frequency[i-1]
+                self.averages.append(avg)
+        index=0
+        for i in arr:
+            for j in range(X.shape[1]):
+                counter = 0
+                for k in range(len(X)):
+                    if y[k]==i:
+                        counter=counter+(X[k][j]-self.averages[index])**2
+                        index+=1
+                    sD=mt.sqrt(counter/frequency[i-1])
+                    self.standardDeviation.append(sD)
+
 if __name__ == '__main__':
     data=importData()
     X=data[0]
     y=data[1]
     X=discretize(3,X)
     X_train, X_test, y_train, y_test = train_test_split(X,y)
-    bayes=naiveBayesClassifier(0)
-    bayes.fit(X_train,y_train)
-    predictResult=bayes.predict(X_test)
-    predictProbaResult=bayes.predictProba(X_test)
-    acc=accuracy(y_test, predictResult)
-    print(acc)
-    bayes1 = naiveBayesClassifier(1)
-    bayes1.fit(X_train, y_train)
-    predictResult = bayes1.predict(X_test)
-    predictProbaResult = bayes1.predictProba(X_test)
-    acc = accuracy(y_test, predictResult)
-    print(acc)
+    #bayes=naiveBayesClassifier(0)
+    #bayes.fit(X_train,y_train)
+    #predictResult=bayes.predict(X_test)
+    #predictProbaResult=bayes.predictProba(X_test)
+    #acc=accuracy(y_test, predictResult)
+    #print(acc)
+    #bayes1 = naiveBayesClassifier(1)
+    #bayes1.fit(X_train, y_train)
+    #predictResult = bayes1.predict(X_test)
+    #predictProbaResult = bayes1.predictProba(X_test)
+    #acc = accuracy(y_test, predictResult)
+    #print(acc)
+    bayesContinuous=naiveBayesClassifierContinuous()
+    bayesContinuous.fit(X_train, y_train)
 
 
 
