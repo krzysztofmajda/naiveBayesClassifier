@@ -104,6 +104,7 @@ class naiveBayesClassifierContinuous(BaseEstimator,ClassifierMixin):
         self.averages=[]
         self.standardDeviation=[]
 
+
     def fit(self, X,y):
         counts = np.unique(y, return_counts=True)
         arr = counts[0]
@@ -125,15 +126,52 @@ class naiveBayesClassifierContinuous(BaseEstimator,ClassifierMixin):
                 for k in range(len(X)):
                     if y[k]==i:
                         counter=counter+(X[k][j]-self.averages[index])**2
-                        index+=1
-                    sD=mt.sqrt(counter/frequency[i-1])
-                    self.standardDeviation.append(sD)
+                sD = mt.sqrt(counter / frequency[i - 1])
+                self.standardDeviation.append(sD)
+                index+=1
+
+    def predict(self, X):
+        counts = np.unique(y, return_counts=True)
+        arr = counts[0]
+        result = []
+        index=0
+        for i in range(len(X)):
+            helpList = []
+            for j in range(len(arr)):
+                counter = 1
+                for k in range(X.shape[1]):
+                    index = j * X.shape[1] + k
+                    hustota=((1.0)/(self.standardDeviation[index]*mt.sqrt(2*mt.pi)))*mt.exp((-(X[i][k]-self.averages[index])**2)/(2*self.standardDeviation[index]**2))
+                    counter = counter * hustota
+                helpList.append(counter)
+            result.append(np.argmax(helpList) + 1)
+        return result
+
+    def predictProba(self,X):
+        counts = np.unique(y, return_counts=True)
+        arr = counts[0]
+        result = []
+        for i in range(len(X)):
+            helpList = []
+            for j in range(len(arr)):
+                counter = 1
+                for k in range(X.shape[1]):
+                    index = j * X.shape[1] + k
+                    hustota = ((1) / (self.standardDeviation[index] * mt.sqrt(2 * mt.pi))) * mt.exp(
+                        (-(j - self.averages[index]) ** 2) / (2 * self.standardDeviation[index] ** 2))
+                    counter = counter * hustota
+                helpList.append(counter)
+            sumList = np.sum(helpList)
+            for p in range(len(helpList)):
+                helpList[p] = helpList[p] / sumList
+            result.append(helpList)
+        return result
 
 if __name__ == '__main__':
     data=importData()
-    X=data[0]
+    x=data[0]
     y=data[1]
-    X=discretize(3,X)
+    X=discretize(3,x)
     X_train, X_test, y_train, y_test = train_test_split(X,y)
     #bayes=naiveBayesClassifier(0)
     #bayes.fit(X_train,y_train)
@@ -147,9 +185,12 @@ if __name__ == '__main__':
     #predictProbaResult = bayes1.predictProba(X_test)
     #acc = accuracy(y_test, predictResult)
     #print(acc)
+    X_train2, X_test2, y_train2, y_test2 = train_test_split(x,y)
     bayesContinuous=naiveBayesClassifierContinuous()
-    bayesContinuous.fit(X_train, y_train)
-
-
-
+    bayesContinuous.fit(X_train2, y_train2)
+    predictConRes=bayesContinuous.predict(X_test2)
+    acc=accuracy(y_test2, predictConRes)
+    print(acc)
+    #predictProConRes=bayesContinuous.predictProba(X_test2)
+    #print(predictProConRes)
 
