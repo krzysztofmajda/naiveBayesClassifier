@@ -18,6 +18,7 @@ def importData():
     X = np.delete(dataArr, 0, 1)
     arr=[X,y]
     return arr
+
 def discretize(n,X):
     est = KBinsDiscretizer(n_bins=n, encode='ordinal', strategy='uniform')
     est.fit(X)
@@ -70,7 +71,7 @@ class naiveBayesClassifier(BaseEstimator,ClassifierMixin):
             for j in range(len(self.apriori)):
                 counter=1
                 for k in range(X.shape[1]):
-                    index=j*13*3+k*3+(int)(X[i][k])
+                    index=j*X.shape[1]*len(countsX)+k*len(countsX)+(int)(X[i][k])
                     counter=counter*self.probabilities[index]
                 counter=counter*self.apriori[j]
                 helpList.append(counter)
@@ -81,12 +82,13 @@ class naiveBayesClassifier(BaseEstimator,ClassifierMixin):
         countsX = np.unique(X, return_counts=True)[0]
         countsX = countsX.astype(np.int32)
         result = []
+
         for i in range(len(X)):
             helpList = []
             for j in range(len(self.apriori)):
                 counter = 1
                 for k in range(X.shape[1]):
-                    index = j * 13 * 3 + k * 3 + (int)(X[i][k])
+                    index = j * X.shape[1] * len(countsX) + k * len(countsX) + (int)(X[i][k])
                     counter = counter * self.probabilities[index]
                 counter = counter * self.apriori[j]
                 helpList.append(counter)
@@ -101,7 +103,6 @@ class naiveBayesClassifierContinuous(BaseEstimator,ClassifierMixin):
     def __init__(self):
         self.averages=[]
         self.standardDeviation=[]
-
 
     def fit(self, X,y):
         counts = np.unique(y, return_counts=True)
@@ -177,9 +178,9 @@ if __name__ == '__main__':
     #predictProbaResult=bayes.predictProba(X_test)
     acc=accuracy(y_test, predictResult)
     print("Accuracy of Naive Bayes Classifier for discrete variables is: ",acc)
-    bayes1 = naiveBayesClassifier(1)
-    bayes1.fit(X_train, y_train)
-    predictResult = bayes1.predict(X_test)
+    bayesLaplace = naiveBayesClassifier(1)
+    bayesLaplace.fit(X_train, y_train)
+    predictResult = bayesLaplace.predict(X_test)
     #predictProbaResult = bayes1.predictProba(X_test)
     acc = accuracy(y_test, predictResult)
     print("Accuracy of Naive Bayes Classifier for discrete variables with LaPlace amendment is: ",acc)
