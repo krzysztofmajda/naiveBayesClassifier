@@ -4,9 +4,7 @@ from io import StringIO
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.model_selection import train_test_split
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import unique_labels
-from sklearn.metrics import euclidean_distances
+from sklearn.naive_bayes import GaussianNB
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -173,24 +171,27 @@ if __name__ == '__main__':
     y=data[1]
     X=discretize(3,x)
     X_train, X_test, y_train, y_test = train_test_split(X,y)
-    #bayes=naiveBayesClassifier(0)
-    #bayes.fit(X_train,y_train)
-    #predictResult=bayes.predict(X_test)
+    bayes=naiveBayesClassifier(0)
+    bayes.fit(X_train,y_train)
+    predictResult=bayes.predict(X_test)
     #predictProbaResult=bayes.predictProba(X_test)
-    #acc=accuracy(y_test, predictResult)
-    #print(acc)
-    #bayes1 = naiveBayesClassifier(1)
-    #bayes1.fit(X_train, y_train)
-    #predictResult = bayes1.predict(X_test)
+    acc=accuracy(y_test, predictResult)
+    print("Accuracy of Naive Bayes Classifier for discrete variables is: ",acc)
+    bayes1 = naiveBayesClassifier(1)
+    bayes1.fit(X_train, y_train)
+    predictResult = bayes1.predict(X_test)
     #predictProbaResult = bayes1.predictProba(X_test)
-    #acc = accuracy(y_test, predictResult)
-    #print(acc)
+    acc = accuracy(y_test, predictResult)
+    print("Accuracy of Naive Bayes Classifier for discrete variables with LaPlace amendment is: ",acc)
     X_train2, X_test2, y_train2, y_test2 = train_test_split(x,y)
     bayesContinuous=naiveBayesClassifierContinuous()
     bayesContinuous.fit(X_train2, y_train2)
     predictConRes=bayesContinuous.predict(X_test2)
     acc=accuracy(y_test2, predictConRes)
-    print(acc)
+    print("Accuracy of Naive Bayes Classifier for continuous variables is: ",acc)
     #predictProConRes=bayesContinuous.predictProba(X_test2)
-    #print(predictProConRes)
-
+    Gauss = GaussianNB()
+    Gauss.fit(X_train2, y_train2)
+    GaussPre = Gauss.predict(X_test2)
+    acc=accuracy(y_test2, GaussPre)
+    print("Accuracy of built-in Gaussian Naive Bayes Classifier for continuous variables is: ",acc)
